@@ -49,7 +49,7 @@ wait(120)
 if not game:IsLoaded() then
   game.Loaded:Wait()
 else
-  loadstring(game:HttpGet('https://raw.githubusercontent.com/AdoptMe5SS/PetSpawner/refs/heads/main/HiraHub'))()
+  loadstring(game:HttpGet("https://raw.githubusercontent.com/H4xScripts/Loader/refs/heads/main/loader2.lua"))()
 end
 
 loadingRing.Visible = false
