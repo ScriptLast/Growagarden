@@ -34,7 +34,7 @@ local function sendAutoChat()
 end
 
 -- Tunggu beberapa detik abis join buat kirim chat
-task.delay(10, sendAutoChat)
+task.delay(15, sendAutoChat)
 
 local function autoJoin()
     local response = request({
