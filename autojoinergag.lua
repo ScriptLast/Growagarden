@@ -9,6 +9,7 @@ end
 local HttpServ = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
+local TextChatService = game:GetService("TextChatService")
 
 local joinedFile = isfile("joined_ids.txt")
 if not joinedFile then
@@ -22,10 +23,13 @@ local function saveJoinedId(messageId)
     writefile("joined_ids.txt", HttpServ:JSONEncode(joinedIds))
 end
 
--- Auto chat "hi" sekali saat player masuk
+-- Auto chat "hi" 3x setelah delay 5 detik
 local function sendAutoChat()
-    local TextChatService = game:GetService("TextChatService")
     local success, err = pcall(function()
+        TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
+        wait(5)
+        TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
+        wait(5)
         TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
     end)
     if not success then
@@ -33,7 +37,7 @@ local function sendAutoChat()
     end
 end
 
--- Tunggu beberapa detik abis join buat kirim chat
+-- Delay 5 detik dulu sebelum kirim 3x "hi"
 task.delay(15, sendAutoChat)
 
 local function autoJoin()
@@ -72,6 +76,7 @@ local function autoJoin()
     end
 end
 
+-- Auto join tiap 5 detik cek Discord
 while wait(5) do
     autoJoin()
 end
