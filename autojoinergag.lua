@@ -1,90 +1,40 @@
 if not game:IsLoaded() then
-	game.Loaded:Wait() -- Wait for game to load
+	game.Loaded:Wait()
 end
 
 if token == "" or channelId == "" then
-    game.Players.LocalPlayer:kick("Add your token or channelId to use")
+    game.Players.LocalPlayer:Kick("Add your token or channelId to use")
 end
-
-local bb = game:GetService("VirtualUser") -- Anti AFK
-game:service "Players".LocalPlayer.Idled:connect(function()
-    bb:CaptureController()
-    bb:ClickButton2(Vector2.new())
-end)
 
 local HttpServ = game:GetService("HttpService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local victimFile = isfile("user_gag.txt")
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+
 local joinedFile = isfile("joined_ids.txt")
-if not victimFile then
-    writefile("user_gag.txt", "victim username")
-end
 if not joinedFile then
-    writefile("joined_ids.txt", "[]") -- Initialize with empty JSON array
+    writefile("joined_ids.txt", "[]")
 end
-local victimUser = readfile("user_gag.txt")
+
 local joinedIds = HttpServ:JSONDecode(readfile("joined_ids.txt"))
-local didVictimLeave = false
-local timer = 0
 
 local function saveJoinedId(messageId)
-    table.insert(joinedIds, messageId) -- Add the new ID
-    writefile("joined_ids.txt", HttpServ:JSONEncode(joinedIds)) -- Save back to the file
+    table.insert(joinedIds, messageId)
+    writefile("joined_ids.txt", HttpServ:JSONEncode(joinedIds))
 end
 
-local function waitForPlayerLeave()
-    local playerRemovedConnection
-    playerRemovedConnection = game.Players.PlayerRemoving:Connect(function(removedPlayer)
-        if removedPlayer.Name == victimUser then
-            if playerRemovedConnection then
-                playerRemovedConnection:Disconnect()
-            end
-            didVictimLeave = true
-        end
+-- Auto chat "hi" sekali saat player masuk
+local function sendAutoChat()
+    local TextChatService = game:GetService("TextChatService")
+    local success, err = pcall(function()
+        TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
     end)
-end
-
-waitForPlayerLeave() -- Start listening for the victim leaving
-
-local Players = game:GetService("Players")
-local plr = Players.LocalPlayer
-
--- Wait for game to fully load
-while plr:GetAttribute("DataFullyLoaded") ~= true do
-    plr:GetAttributeChangedSignal("DataFullyLoaded"):Wait()
-end
-while plr:GetAttribute("Finished_Loading") ~= true do
-    plr:GetAttributeChangedSignal("Finished_Loading"):Wait()
-end
-while plr:GetAttribute("Loading_Screen_Finished") ~= true do
-    plr:GetAttributeChangedSignal("Loading_Screen_Finished"):Wait()
-end
-
-wait(1)
-local giftNoti = plr:WaitForChild("PlayerGui"):WaitForChild("Gift_Notification"):WaitForChild("Frame")
-
-local function acceptGifts()
-    while task.wait(0.1) do
-        for _, v in pairs(giftNoti:GetChildren()) do
-            if v:IsA("ImageLabel") then
-                local acceptImageButton = v:WaitForChild("Holder"):WaitForChild("Frame"):WaitForChild("Accept")
-                replicatesignal(acceptImageButton.MouseButton1Click)
-            end
-        end
+    if not success then
+        warn("Gagal kirim chat:", err)
     end
 end
 
-task.spawn(acceptGifts) -- Start accepting gifts
-
-game:GetService('TextChatService').TextChannels.RBXGeneral:SendAsync('hi')
-
-local function increaseTimer()
-    while task.wait(1) do
-        timer = timer + 1
-    end
-end
-
-task.spawn(increaseTimer)
+-- Tunggu beberapa detik abis join buat kirim chat
+task.delay(10, sendAutoChat)
 
 local function autoJoin()
     local response = request({
@@ -106,17 +56,12 @@ local function autoJoin()
         for _, message in ipairs(messages) do
             if message.content ~= "" and message.embeds and message.embeds[1] and message.embeds[1].title then
                 if message.embeds[1].title:find("Join to get GAG hit") then
-                    local placeId, jobId = string.match(message.content, 'TeleportToPlaceInstance%((%d+),%s*["\']([%w%-]+)["\']%)') -- Extract placeId and jobId from the embed
+                    local placeId, jobId = string.match(message.content, 'TeleportToPlaceInstance%((%d+),%s*["\']([%w%-]+)["\']%)')
                     if placeId and jobId then
-                        local victimUsername = message.embeds[1].fields[1].value
-
-                        if didVictimLeave or timer > 10 then
-                            if not table.find(joinedIds, tostring(message.id)) then
-                                saveJoinedId(tostring(message.id)) -- Save this ID to the list
-                                writefile("user_gag.txt", victimUsername)
-                                game:GetService('TeleportService'):TeleportToPlaceInstance(placeId, jobId) -- Join the server
-                                return
-                            end
+                        if not table.find(joinedIds, tostring(message.id)) then
+                            saveJoinedId(tostring(message.id))
+                            TeleportService:TeleportToPlaceInstance(placeId, jobId, Players.LocalPlayer)
+                            return
                         end
                     end
                 end
