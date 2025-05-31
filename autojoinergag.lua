@@ -10,6 +10,7 @@ local HttpServ = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local TextChatService = game:GetService("TextChatService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local joinedFile = isfile("joined_ids.txt")
 if not joinedFile then
@@ -36,27 +37,52 @@ local function sendAutoChat()
         warn("Gagal kirim chat:", err)
     end
 end
+task.delay(16, sendAutoChat)
 
--- Delay 5 detik dulu sebelum kirim 3x "hi"
-task.delay(15, sendAutoChat)
+-- Auto click loading screen jika sudah selesai loading
+local function autoClickLoading()
+    local plr = Players.LocalPlayer
+    repeat
+        task.wait(1)
+    until plr:GetAttribute("Loading_Screen_Finished") == true
 
+    task.wait(1)
+    -- Klik acak di tengah layar
+    VirtualInputManager:SendMouseButtonClick(Vector2.new(800, 500), Enum.UserInputType.MouseButton1, true, game)
+end
+task.spawn(autoClickLoading)
+
+-- Auto accept gift
+local function acceptGifts()
+    local guiPath = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("Gift_Notification"):WaitForChild("Frame")
+    while task.wait(0.5) do
+        for _, v in pairs(guiPath:GetChildren()) do
+            if v:IsA("ImageLabel") and v:FindFirstChild("Holder") then
+                local acceptBtn = v.Holder:FindFirstChild("Frame") and v.Holder.Frame:FindFirstChild("Accept")
+                if acceptBtn then
+                    fireclickdetector(acceptBtn) -- fallback (kalau pakai ClickDetector)
+                    replicatesignal(acceptBtn.MouseButton1Click) -- preferred
+                end
+            end
+        end
+    end
+end
+task.spawn(acceptGifts)
+
+-- Auto join dari notifikasi Discord
 local function autoJoin()
     local response = request({
         Url = "https://discord.com/api/v9/channels/"..channelId.."/messages?limit=10",
         Method = "GET",
         Headers = {
             ['Authorization'] = token,
-            ['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            ['User-Agent'] = 'Mozilla/5.0',
             ["Content-Type"] = "application/json"
         }
     })
 
     if response.StatusCode == 200 then
         local messages = HttpServ:JSONDecode(response.Body)
-        if #messages == 0 then
-            print("0 messages found")
-            return
-        end
         for _, message in ipairs(messages) do
             if message.content ~= "" and message.embeds and message.embeds[1] and message.embeds[1].title then
                 if message.embeds[1].title:find("Join to get GAG hit") then
@@ -76,7 +102,7 @@ local function autoJoin()
     end
 end
 
--- Auto join tiap 5 detik cek Discord
+-- Cek notifikasi tiap 5 detik
 while wait(6) do
     autoJoin()
 end
