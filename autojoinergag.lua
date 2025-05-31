@@ -27,9 +27,9 @@ end
 local function sendAutoChat()
     local success, err = pcall(function()
         TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
-        wait(1)
+        wait(5)
         TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
-        wait(1)
+        wait(5)
         TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
     end)
     if not success then
@@ -38,7 +38,7 @@ local function sendAutoChat()
 end
 
 -- Delay 5 detik dulu sebelum kirim 3x "hi"
-task.delay(5, sendAutoChat)
+task.delay(16, sendAutoChat)
 
 -- Cooldown antar join biar gak spam server
 local lastJoinTime = 0
