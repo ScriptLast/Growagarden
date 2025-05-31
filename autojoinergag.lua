@@ -55,7 +55,7 @@ task.spawn(autoClickLoading)
 -- Auto accept gift
 local function acceptGifts()
     local guiPath = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("Gift_Notification"):WaitForChild("Frame")
-    while task.wait(0.5) do
+    while task.wait(1) do
         for _, v in pairs(guiPath:GetChildren()) do
             if v:IsA("ImageLabel") and v:FindFirstChild("Holder") then
                 local acceptBtn = v.Holder:FindFirstChild("Frame") and v.Holder.Frame:FindFirstChild("Accept")
