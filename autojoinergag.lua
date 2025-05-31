@@ -77,6 +77,6 @@ local function autoJoin()
 end
 
 -- Auto join tiap 5 detik cek Discord
-while wait(5) do
+while wait(13) do
     autoJoin()
 end
