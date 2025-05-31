@@ -81,6 +81,6 @@ local function autoJoin()
 end
 
 -- Cek notifikasi Discord tiap 5 detik
-while task.wait(20) do
+while task.wait(38) do
     autoJoin()
 end
