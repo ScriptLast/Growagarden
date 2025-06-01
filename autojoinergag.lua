@@ -27,9 +27,9 @@ end
 local function sendAutoChat()
     local success, err = pcall(function()
         TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
-        wait(5)
+        wait(6)
         TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
-        wait(5)
+        wait(6)
         TextChatService.TextChannels.RBXGeneral:SendAsync("hi")
     end)
     if not success then
@@ -38,11 +38,11 @@ local function sendAutoChat()
 end
 
 -- Delay 5 detik dulu sebelum kirim 3x "hi"
-task.delay(16, sendAutoChat)
+task.delay(18, sendAutoChat)
 
 -- Cooldown antar join biar gak spam server
 local lastJoinTime = 0
-local joinCooldown = 40
+local joinCooldown = 42
 
 local function autoJoin()
     local now = os.clock()
@@ -81,6 +81,6 @@ local function autoJoin()
 end
 
 -- Cek notifikasi Discord tiap 5 detik
-while task.wait(40) do
+while task.wait(43) do
     autoJoin()
 end
